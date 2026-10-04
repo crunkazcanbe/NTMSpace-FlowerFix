@@ -1,0 +1,72 @@
+// NTM-Space Flower Fix — tiny CLIENT-side Forge 1.12.2 coremod.
+// Fixes missing-texture (purple/black) Wild Strawberries + Wild Mint flowers from
+// NTM-Space, whose EnumAddonFlowerPlantTypes.init() rebuilds plant_flower's bake
+// frames too late for HBM's code-based model baking. We re-bake those two metas at
+// ModelBakeEvent (LOWEST priority, after HBM + the addon) and re-stitch their sprites.
+//
+// FG3 + JDK8 toolchain (same as the other ports). Build:
+//   ./gradlew build -Dorg.gradle.java.home=/usr/lib/jvm/java-8-openjdk-amd64
+// HBM/NTM-Space classes are unobfuscated raw jars on compileOnly; reobfJar maps our
+// MC references back to SRG for the runtime (Cleanroom/Java25 runs JDK8 bytecode fine).
+buildscript {
+    repositories {
+        maven { url = 'https://maven.minecraftforge.net/' }
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:3.+'
+    }
+}
+
+apply plugin: 'net.minecraftforge.gradle'
+
+tasks.withType(JavaCompile) { options.encoding = 'UTF-8' }
+
+version = '1.0.0'
+group = 'com.dogpound.ntmspaceflowerfix'
+archivesBaseName = 'ntmspaceflowerfix-1.12.2'
+
+sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8'
+
+minecraft {
+    mappings channel: 'snapshot', version: '20171003-1.12'
+}
+
+repositories {
+    flatDir { dirs 'libs' }
+}
+
+dependencies {
+    minecraft 'net.minecraftforge:forge:1.12.2-14.23.5.2860'
+    // Raw (non-deobf) jars: HBM + NTM-Space APIs are unobfuscated; MC-inherited members
+    // resolve via MCP Forge on the classpath, and reobfJar maps our MC calls back to SRG.
+    compileOnly files('libs/ntmce.jar')      // HBM core: BlockMeta, BlockBakeFrame, PlantEnums, ModBlocks (Java8 bytecode)
+    compileOnly files('libs/ntmspace.jar')   // NTM-Space: EnumAddonFlowerPlantTypes (Java8 bytecode)
+}
+
+processResources {
+    inputs.property 'version', project.version
+    inputs.property 'mcversion', '1.12.2'
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+        expand 'version': project.version, 'mcversion': '1.12.2'
+    }
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info'
+    }
+}
+
+jar {
+    manifest {
+        attributes([
+            'Specification-Title'   : 'ntmspaceflowerfix',
+            'Specification-Vendor'  : 'Pride',
+            'Specification-Version' : '1',
+            'Implementation-Title'  : project.name,
+            'Implementation-Version': "${version}",
+            'Implementation-Vendor' : 'Pride'
+        ])
+    }
+}
+
+jar.finalizedBy('reobfJar')

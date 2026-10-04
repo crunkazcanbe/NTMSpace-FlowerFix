@@ -1,0 +1,13 @@
+[
+  {
+    "modid": "ntmspaceflowerfix",
+    "name": "NTM-Space Flower Fix",
+    "description": "Client-side render fix for NTM-Space's Wild Strawberries and Wild Mint flowers (hbm:plant_flower metas), which render purple/black because the addon rebuilds their bake frames too late for HBM's code-based model baking. Re-stitches the sprites and re-bakes the two metas at ModelBakeEvent (LOWEST priority). Fixes upstream NTM-Space issue #80.",
+    "version": "${version}",
+    "mcversion": "${mcversion}",
+    "url": "",
+    "authorList": [ "crunkazcanbe" ],
+    "credits": "Fixes NTM-Space (Hbm's Nuclear Tech CE Space) flower rendering. Built on the HBM-CE / NTM-Space code-baked model pipeline.",
+    "dependencies": [ "hbm" ]
+  }
+]

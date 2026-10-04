@@ -1,0 +1,12 @@
+build/
+.gradle/
+run/
+out/
+libs/
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+.recall/
+graphify-out/
+logs/
+.idea/
+*.iml
